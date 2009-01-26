@@ -57,10 +57,14 @@
 <p>This is pretty simple... just include it into your C++, ie:<br>
 
 <pre>
-   #include <Parser.h>
+#include &lt;Parser.h&gt;
 </pre>
 
-and when doing compilation remember to add the directory where you have your header file, if you take a look at the Makefile in the project, for GNU G++ you will see the  "-I" option
+and when doing compilation remember to add the directory where you have your header file, if you take a look at the Makefile in the project, for GNU G++ you will see the  "-I" option, ie:<br>
+
+<pre>
+    $ g++ -Imy_inc_dir ....
+</pre>
 
 </p>
 <h2>License</h2>
