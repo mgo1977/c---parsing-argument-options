@@ -7,13 +7,42 @@
 #include <vector>
 #include <sstream>
 
+
+
+// helpers
+template<typename T>
+bool canBeConvertedTo(const std::string str) {
+
+    T result;
+
+    std::stringstream text(str);
+
+    if ( text >> result )
+	return true;
+    else
+	return false;
+
+}
+
+template<typename T>
+T fromString(const std::string& str) {
+
+    T result;
+
+    std::stringstream text(str);
+
+    text >> result;
+
+    return result;
+}
+
+
 /*
  * The goal is able to simple parse cmd line options:
  *
  *  program [--debug|-d] [--file=prueba|--file prueba|-f prueba]
  *
  */
-
 
 class BaseOption {
 
@@ -141,6 +170,40 @@ class StringOption : public Option<std::string> {
 	    return defaultValue;
 	else
 	    return value;
+    }
+
+};
+
+class IntegerOption : public Option<int> {
+
+    public:
+
+    IntegerOption(char sOption, const char* lOption, bool mandatory, const char* descr)
+     : Option<int>(sOption, lOption, mandatory, true, descr)
+    {}
+
+    IntegerOption(char sOption, const char* lOption, bool mandatory, int defValue, const char* descr)
+     : Option<int>(sOption, lOption, mandatory, true, defValue, descr)
+    {}
+
+    int getValue() {
+
+
+	if ( ! found )
+	    return defaultValue;
+	else {
+
+	    if ( canBeConvertedTo<int>(value) ) {
+		return fromString<int>(value);
+	    }
+	    else {
+		// this is a tricky condition... we should be reporting an error
+		// possible throwing an exception
+		return -1;
+	    }
+
+	}
+
     }
 
 };
@@ -430,5 +493,6 @@ Parser::findOption(std::string longOption) {
     return NULL;
 
 }
+
 
 #endif

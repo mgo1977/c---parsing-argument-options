@@ -20,16 +20,16 @@ int main(int argc, char** argv) {
 
     BoolOption    debug('d', "debug", false, "enables the debug mode");
     StringOption  inputScript('i', "inputScript", false, "set the inputs script to be read");
-    StringOption  myMandOption1('m', "mandatory-option-1", true, "example of mandatory 1");
-    StringOption  myMandOption2('n', "mandatory-option-2", true, "example of mandatory 2");
+    StringOption  username('u', "username", true, "Username to be used");
+    IntegerOption port('p', "port", false, 23, "port where the server is listening");
 
 
     Parser parser;
 
     parser.addOption(debug)
 	  .addOption(inputScript)
-	  .addOption(myMandOption1)
-	  .addOption(myMandOption2);
+	  .addOption(username)
+	  .addOption(port);
 
 
     vector<string> otherArguments = parser.parse(argc, argv);
@@ -37,6 +37,8 @@ int main(int argc, char** argv) {
     cout << "------------------" << endl;
     cout << "debug 	 isSet='" << debug.isSet() << "', getValue='" << debug.getValue() << "'" << endl;
     cout << "inputString isSet='" << inputScript.isSet() << "', getValue='" << inputScript.getValue() << "'" << endl;
+    cout << "username    isSet='" << username.isSet() << "', getValue='" << username.getValue() << "'" << endl;
+    cout << "port        isSet='" << port.isSet() << "', getValue='" << port.getValue() << "'" << endl;
 
     cout << "otherArguments: " << endl;
     cout << " ";
