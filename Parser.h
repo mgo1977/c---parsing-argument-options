@@ -283,19 +283,20 @@ Parser::parse(int argc, char** argv) {
 
 	BaseOption* option = NULL;
 
+	std::string possibleValue;
+
 	// now, if the next char is a '-' it's a long option,
 	// if not, it's a short one
 	if ( argument[1] != '-' ) {
 
+	    option = findOption(argument[1]);
+
 	    // this looks like a short option, so let's check if there
-	    // are no more chars here, if not, that's malformed
+	    // are no more chars here, then we pick the value from here
 	    if ( argument.length() > 2 ) {
-		std::stringstream error;
-		error << "Malformed argument! (see arg number " << argNumber << ")";
-		usage(error.str());
+		possibleValue = argument.substr(2);
 	    }
 
-	    option = findOption(argument[1]);
 
 	}
 	else {
@@ -308,7 +309,21 @@ Parser::parse(int argc, char** argv) {
 		usage(error.str());
 	    }
 
-	    option = findOption( argument.substr(2) );
+	    // let's allow the separation between key and value by '='
+	    // on long options
+	    std::string optionAndValueStr = argument.substr(2);
+
+	    // initially we suppose there is no value
+	    std::string optionStr = optionAndValueStr;
+
+	    int separator = optionStr.find('=');
+
+	    if ( separator != std::string::npos ) {
+		optionStr     = optionAndValueStr.substr(0, separator);
+		possibleValue = optionAndValueStr.substr(separator+1);
+	    }
+
+	    option = findOption( optionStr );
 
 	}
 
@@ -321,19 +336,28 @@ Parser::parse(int argc, char** argv) {
 	// let's see if this needs an argument
 	if ( option->needArgument() ) {
 
-	    // try to get the next one or fail
-	    if ( argNumber+1 < argc ) {
+	    if ( possibleValue.empty() ) {
 
-		// let's move to the next argument
-		argNumber++;
+		// try to get the next one or fail
+		if ( argNumber+1 < argc ) {
 
-		option->setValue( argv[argNumber] );
+		    // let's move to the next argument
+		    argNumber++;
+
+		    option->setValue( argv[argNumber] );
+
+		}
+		else {
+		    std::stringstream error;
+		    error << "Option '" << argument << "' needs an additional argument";
+		    usage(error.str());
+		}
 
 	    }
 	    else {
-		std::stringstream error;
-		error << "Option '" << argument << "' needs an additional argument";
-		usage(error.str());
+		// the value we got directly from the option:
+		//   --key=value or -kvalue
+		option->setValue( possibleValue.c_str() );
 	    }
 
 	}
