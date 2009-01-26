@@ -232,27 +232,28 @@ class StringOption : public Option<std::string> {
 
 };
 
-class IntegerOption : public Option<int> {
+template<typename T>
+class NumberOption : public Option<T> {
 
     public:
 
-    IntegerOption(char sOption, const char* lOption, bool mandatory, const char* descr)
-     : Option<int>(sOption, lOption, mandatory, true, descr)
+    NumberOption(char sOption, const char* lOption, bool mandatory, const char* descr)
+     : Option<T>(sOption, lOption, mandatory, true, descr)
     {}
 
-    IntegerOption(char sOption, const char* lOption, bool mandatory, int defValue, const char* descr)
-     : Option<int>(sOption, lOption, mandatory, true, defValue, descr)
+    NumberOption(char sOption, const char* lOption, bool mandatory, T defValue, const char* descr)
+     : Option<T>(sOption, lOption, mandatory, true, defValue, descr)
     {}
 
-    int getValue() {
+    T getValue() {
 
 
-	if ( ! found )
-	    return defaultValue;
+	if ( ! Option<T>::found )
+	    return Option<T>::defaultValue;
 	else {
 
-	    if ( canBeConvertedTo<int>(value) ) {
-		return fromString<int>(value);
+	    if ( canBeConvertedTo<T>( Option<T>::value ) ) {
+		return fromString<T>( Option<T>::value );
 	    }
 	    else {
 		// this is a tricky condition... we should be reporting an error
@@ -265,6 +266,10 @@ class IntegerOption : public Option<int> {
     }
 
 };
+
+typedef NumberOption<int>	IntegerOption;
+typedef NumberOption<float>	FloatOption;
+typedef NumberOption<double> 	DoubleOption;
 
 
 class Parser {
