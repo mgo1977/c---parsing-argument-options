@@ -3,6 +3,7 @@
 #define __PARSER__
 
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <vector>
 #include <sstream>
@@ -450,6 +451,8 @@ Parser::usage(const char* text) {
     std::stringstream optionsSummary;
     std::stringstream fullDescription;
 
+    int maxWidth = 30;
+
 
     for(std::vector<BaseOption*>::iterator iter = options.begin();
 	iter != options.end();
@@ -480,7 +483,7 @@ Parser::usage(const char* text) {
 	optionsSummary << " ";
 
 	// full description
-	fullDescription << " " << fullOptionBase << "\t\t" << option->getDescription() << std::endl;
+	fullDescription << " " << std::setw(maxWidth) << std::left << fullOptionBase << "\t\t" << option->getDescription() << std::endl;
 
     }
 
