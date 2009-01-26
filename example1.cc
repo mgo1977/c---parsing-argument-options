@@ -23,6 +23,8 @@ int main(int argc, char** argv) {
     StringOption  username('u', "username", true, "Username to be used");
     IntegerOption port('p', "port", false, 23, "port where the server is listening");
     IntegerOption key(BaseOption::NO_OPTION, "key", true, -1, "key number to use");
+    IntegerOption portable('r', "portable", false, 88, "portable option");
+    IntegerOption remote('R', "remote", false, 908, "remote option");
 
 
     Parser parser;
@@ -31,7 +33,9 @@ int main(int argc, char** argv) {
 	  .addOption(inputScript)
 	  .addOption(username)
 	  .addOption(port)
-	  .addOption(key);
+	  .addOption(key)
+	  .addOption(portable)
+	  .addOption(remote);
 
 
     vector<string> otherArguments = parser.parse(argc, argv);
@@ -42,6 +46,8 @@ int main(int argc, char** argv) {
     cout << "username    isSet='" << username.isSet() << "', getValue='" << username.getValue() << "'" << endl;
     cout << "port        isSet='" << port.isSet() << "', getValue='" << port.getValue() << "'" << endl;
     cout << "key         isSet='" << key.isSet() << "', getValue='" << key.getValue() << "'" << endl;
+    cout << "portable    isSet='" << portable.isSet() << "', getValue='" << portable.getValue() << "'" << endl;
+    cout << "remote      isSet='" << remote.isSet() << "', getValue='" << remote.getValue() << "'" << endl;
 
     cout << "otherArguments: " << endl;
     cout << " ";

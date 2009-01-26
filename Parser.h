@@ -79,7 +79,37 @@ class BaseOption {
     }
 
     bool matches(std::string lOption) {
-	return ( lOption == longOption );
+	return ( toLower(lOption) == toLower(longOption) );
+    }
+
+    std::string toLower(const std::string& original) {
+	std::string lc = original;
+
+	for(int index=0; index<lc.size(); ++index)
+	    lc[index] = std::tolower(lc[index]);
+
+	return lc;
+    }
+
+    int bestMatch(std::string lOption) {
+
+	// The idea is to determine the number of chars
+	// that matches the requested option
+	int matches = 0;
+
+	// is greater don't waste time
+	if ( lOption.size() > longOption.size() )
+	    return matches;
+
+	for(int index=0; index < lOption.size(); ++index) {
+	    if ( std::tolower(lOption[index]) == std::tolower(longOption[index]) )
+		matches++;
+	    else
+		return matches;
+	}
+
+	return matches;
+
     }
 
     bool needArgument() const { return followsArgument; }
@@ -504,17 +534,55 @@ Parser::findOption(char shortOption) {
 BaseOption*
 Parser::findOption(std::string longOption) {
 
-    // iterate over the array and search for the short option
+    // iterate over the array and search for the exact match option
     for(int index=0; index < options.size(); ++index) {
-
 	BaseOption* option = options.at(index);
-
 	if ( option->matches( longOption ) )
 	    return option;
+    }
+
+    // now, let's search for better matching ones...
+    int bestMatchSize   = 0;
+    BaseOption* bestMatchOption = NULL;
+    std::vector<std::string> ambiguousOptions;
+
+    for(int index=0; index < options.size(); ++index) {
+	BaseOption* option = options.at(index);
+
+	int matchSize = option->bestMatch(longOption);
+
+	// we have a new winner
+	if ( matchSize > bestMatchSize ) {
+	    bestMatchSize   = matchSize;
+	    bestMatchOption = option;
+
+	    // clear the list
+	    ambiguousOptions.clear();
+	}
+	else if (bestMatchSize>0 && matchSize==bestMatchSize ) {
+	    // this is conflicting with other option
+	    ambiguousOptions.push_back(option->getLongOption());
+	}
 
     }
 
-    return NULL;
+    if ( ambiguousOptions.size() > 0 ) {
+	// if we're in an ambiguous case, it's better to report it
+	std::stringstream error;
+	error << "Option '" << longOption << "' is ambiguous: ";
+
+	error << bestMatchOption->getLongOption();
+
+	for(int index=0; index < ambiguousOptions.size(); ++index) {
+	    error << ", " << ambiguousOptions[index];
+	}
+
+	usage(error.str());
+    }
+
+
+
+    return bestMatchOption;
 
 }
 
