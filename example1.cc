@@ -22,6 +22,7 @@ int main(int argc, char** argv) {
     StringOption  inputScript('i', "inputScript", false, "set the inputs script to be read");
     StringOption  username('u', "username", true, "Username to be used");
     IntegerOption port('p', "port", false, 23, "port where the server is listening");
+    IntegerOption key(BaseOption::NO_OPTION, "key", true, -1, "key number to use");
 
 
     Parser parser;
@@ -29,7 +30,8 @@ int main(int argc, char** argv) {
     parser.addOption(debug)
 	  .addOption(inputScript)
 	  .addOption(username)
-	  .addOption(port);
+	  .addOption(port)
+	  .addOption(key);
 
 
     vector<string> otherArguments = parser.parse(argc, argv);
@@ -39,6 +41,7 @@ int main(int argc, char** argv) {
     cout << "inputString isSet='" << inputScript.isSet() << "', getValue='" << inputScript.getValue() << "'" << endl;
     cout << "username    isSet='" << username.isSet() << "', getValue='" << username.getValue() << "'" << endl;
     cout << "port        isSet='" << port.isSet() << "', getValue='" << port.getValue() << "'" << endl;
+    cout << "key         isSet='" << key.isSet() << "', getValue='" << key.getValue() << "'" << endl;
 
     cout << "otherArguments: " << endl;
     cout << " ";
