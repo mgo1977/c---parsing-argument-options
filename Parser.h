@@ -83,12 +83,10 @@ class BaseOption {
        found(false)
     {}
 
-    virtual
     bool isSet() {
 	return found;
     }
 
-    virtual
     std::string getValue() const {
 	return value;
     }
