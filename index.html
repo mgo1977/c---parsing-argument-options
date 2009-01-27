@@ -53,8 +53,10 @@
     </div>
 
     <p>I've been looking for some alternatives to do my option argument parsing and I've found several ones. The thing that got my attention was the fact that most of that implementations were bigger in respect what I was expecting. So, I decided to try to write it by myself, as some kinda of proof of concept and took me only ~5 hours to get a decent set of features working.
-</p><h2>Install</h2>
-<p>This is pretty simple... just include it into your C++, ie:<br>
+    </p>
+    
+    <h2>Install</h2>
+        <p>This is pretty simple... just include it into your C++, ie:<br>
 
 <pre>
 #include &lt;Parser.h&gt;
@@ -67,6 +69,222 @@ $ g++ -Imy_inc_dir ....
 </pre>
 
 </p>
+
+    <h2>Documentation</h2>
+<p>
+
+These are the main steps to use:<br>
+
+<ol>
+    <li>create all options, between set of the existing ones you have:<br><br>
+
+    <ul> 
+        <li>BoolOption   : will be set if the flag is specified.
+                         it doesn't need more arguments, ie:
+                         "-d" or "--debug"<br><br>
+ 
+        <li>StringOption : will be set if specified, and the value will be
+                         the next argument, ie:
+                           "-uMariano" or "-u Mariano" or
+                           "--username Mariano" or "--username=Mariano"<br><br>
+ 
+       <li>IntegerOption
+       <li>FloatOption
+       <li>DoubleOption : will be set if specified, and the value will be the next argument, ie:
+          "-p23" or "-p 23" or "--port 23" or "--port=23"
+
+      </ul>
+      <br>
+ 
+      Options can be mandatory, most of them can have a default value and
+      passing the description information will autogenerate the usage legend,
+      ie:<br>
+
+<pre>
+ 
+BoolOption    debug   ('d', "debug",        false, "enables the debug mode");
+StringOption  username('u', "username",     true , "set the username");
+IntegerOption port    ('p', "port",         false, 23, "server port");
+FloatOption   port    ('n', "portability",  false, 1.11, "smart option...");
+
+</pre><br>
+ 
+      Note that<br><br>
+
+      <ul>
+       
+          <li>the first argument specifies the character to be used as the short option<br><br>
+          <li>the second argument specifies the string to be used as the long option<br><br>
+          <li>the third argument tells if the option is mandatory (if not specified
+              and error will be printed and the program will stop)<br><br>
+          <li>in the cases of Options that receives values (StringOption, IntegerOption, etc...)
+              a default value can be specified<br><br>
+          <li>the description to be used in the usage text<br><br>
+
+      </ul>
+
+      <br> 
+In our previous example:
+
+<pre> 
+$ ./example2
+The following arguments are mandatory: -u|--username
+Usage: ./example2 [-h|--help] [-d|--debug] -u|--username value
+    [-p|--port value] [-n|--portability value]
+Options:
+ -h, --help                             print this help
+ -d, --debug                            enables the debug mode
+ -u, --username value                   set the username
+ -p, --port value                       server port
+ -n, --portability value                smart option...
+
+</pre>
+ 
+     It also tries to do full matching of the option, and if it's not successfull then it
+     tries to get the option that best matches the argument. It can also detect ambiguities, ie:<br>
+ 
+<pre>
+$ ./example2 --por
+Option 'por' is ambiguous: port, portability
+Usage: ./example2 [-h|--help] [-d|--debug] -u|--username value
+    [-p|--port value] [-n|--portability value]
+Options:
+ -h, --help                             print this help
+ -d, --debug                            enables the debug mode
+ -u, --username value                   set the username
+ -p, --port value                       server port
+ -n, --portability value                smart option...
+</pre>
+ 
+     Also, it's case independent, so, "--port" will be equal to "--PoRt"
+
+     <br><br>
+ 
+ <li>Now, the easy part: create the parser, add the options and parse it:<br>
+
+ <pre>
+Parser parser;
+
+parser.addOption(debug)
+      .addOption(username)
+      .addOption(port)
+      .addOption(portability);
+
+vector<string> otherArguments = parser.parse(argc, argv);
+</pre>
+ <br> 
+      Note that the "parse()" will return you the other arguments that were specified in the
+      command line and that weren't options, ie:<br>
+
+<pre>
+$ ./example2 --username=Mariano ARG1 -p 34 ARG2 --debug ARG3 ARG4
+</pre>
+
+      <br>
+ 
+      then, the otherArguments vector will contain:<br>
+ 
+<pre>
+{ ARGUMENT1, ARGUMENT2, ARGUMENT3, ARGUMENT4 }
+</pre>
+ 
+      we do this in order to provide an easy way to recover them without needed to do some
+      extra parsing of argv.<br><br>
+ 
+      On your program, you can use the following methods to inspect the options:<br>
+ 
+      <ul>
+          <li>bool isSet() : will return you true if the option was specified, false otherwise<br><br>
+ 
+          <li>TYPE getValue(): the value specified for this option or default value it was not
+                               specified. TYPE will depend on the type of option, ie:
+                                       BoolOption    will return a bool
+                                       StringOption  will return a string
+                                       IntegerOption will return an int
+                                       so on...
+       </ul>
+        <br>
+
+       Also please note, that's highly convenient to check is the option was set, prior to get
+       the value (specially in non-defaulted value cases)
+</ol> 
+
+</p>
+
+
+<h2>Code Example</h2>
+
+<pre>
+#include &lt;iostream&gt;
+#include &lt;Parser.h&gt;
+
+using namespace std;
+
+int main(int argc, char** argv) {
+
+    BoolOption    debug         ('d', "debug",      false, "enables the debug mode");
+    StringOption  username      ('u', "username",   true , "set the username");
+    IntegerOption port          ('p', "port",       false, 23, "server port");
+    FloatOption   portability   ('n', "portability",false, "smart option...");
+
+
+    Parser parser;
+
+    parser.addOption(debug)
+          .addOption(username)
+          .addOption(port)
+          .addOption(portability);
+
+    vector&lt;string&gt; otherArguments = parser.parse(argc, argv);
+
+    if ( debug.isSet() ) {
+        cout &lt;&lt; "debug flag was set" &lt;&lt; endl;
+    }
+
+    // username is mandatory, so we don't need to check it
+    cout &lt;&lt; "username was set to '" &lt;&lt; username.getValue() &lt;&lt; "'" &lt;&lt; endl;
+
+    // port has a default value, so we can choose not to check it
+    // and work with the default value transparently
+    cout &lt;&lt; "port was set to '" &lt;&lt; port.getValue() &lt;&lt; "'" &lt;&lt; endl;
+
+
+    if ( portability.isSet() ) {
+        cout &lt;&lt; "portability was set to '" &lt;&lt; portability.getValue() &lt;&lt; "'" &lt;&lt; endl;
+    }
+
+ 
+    // if other arguments were specified, we can easily access them
+    if ( ! otherArguments.empty() ) {
+
+        cout &lt;&lt; "otherArguments: ";
+
+        bool isFirst = true;
+
+        for(vector&lt;string&gt;::iterator argIter = otherArguments.begin();
+            argIter != otherArguments.end();
+            ++argIter
+        ) {
+
+            if ( !isFirst )
+                cout &lt;&lt; ", ";
+
+            cout &lt;&lt; "'" &lt;&lt; *argIter &lt;&lt; "'";
+
+            isFirst = false;
+        }
+
+        cout &lt;&lt; endl;
+
+    }
+
+
+}
+
+</pre>
+
+
+
 <h2>License</h2>
 <p>LGPL</p>
 <h2>Authors</h2>
