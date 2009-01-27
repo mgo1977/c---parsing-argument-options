@@ -30,18 +30,18 @@ int main(int argc, char** argv) {
     Parser parser;
 
     parser.addOption(debug)
-	  .addOption(inputScript)
-	  .addOption(username)
-	  .addOption(port)
-	  .addOption(key)
-	  .addOption(portable)
-	  .addOption(remote);
+        .addOption(inputScript)
+        .addOption(username)
+        .addOption(port)
+        .addOption(key)
+        .addOption(portable)
+        .addOption(remote);
 
 
     vector<string> otherArguments = parser.parse(argc, argv);
 
     cout << "------------------" << endl;
-    cout << "debug 	 isSet='" << debug.isSet() << "', getValue='" << debug.getValue() << "'" << endl;
+    cout << "debug       isSet='" << debug.isSet() << "', getValue='" << debug.getValue() << "'" << endl;
     cout << "inputString isSet='" << inputScript.isSet() << "', getValue='" << inputScript.getValue() << "'" << endl;
     cout << "username    isSet='" << username.isSet() << "', getValue='" << username.getValue() << "'" << endl;
     cout << "port        isSet='" << port.isSet() << "', getValue='" << port.getValue() << "'" << endl;
@@ -55,16 +55,16 @@ int main(int argc, char** argv) {
     bool isFirst = true;
 
     for(vector<string>::iterator argIter = otherArguments.begin();
-	argIter != otherArguments.end();
-	++argIter
+        argIter != otherArguments.end();
+        ++argIter
     ) {
 
-	if ( !isFirst )
-	    cout << ", ";
+        if ( !isFirst )
+            cout << ", ";
 
-	cout << *argIter;
+        cout << *argIter;
 
-	isFirst = false;
+        isFirst = false;
     }
 
     cout << endl;

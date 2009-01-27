@@ -46,9 +46,9 @@ bool canBeConvertedTo(const std::string str) {
     std::stringstream text(str);
 
     if ( text >> result )
-	return true;
+        return true;
     else
-	return false;
+        return false;
 
 }
 
@@ -83,58 +83,58 @@ class BaseOption {
        found(false)
     {}
 
-    bool isSet() {
-	return found;
+        bool isSet() {
+        return found;
     }
 
     std::string getValue() const {
-	return value;
+        return value;
     }
 
     void setValue(const char* readValue) {
-	found = true;
-	value = readValue;
+        found = true;
+        value = readValue;
     }
 
     void markAsFound() {
-	found = true;
+        found = true;
     }
 
     bool matches(char shOption) {
-	return ( shOption == shortOption );
+        return ( shOption == shortOption );
     }
 
     bool matches(std::string lOption) {
-	return ( toLower(lOption) == toLower(longOption) );
+        return ( toLower(lOption) == toLower(longOption) );
     }
 
     std::string toLower(const std::string& original) {
-	std::string lc = original;
+        std::string lc = original;
 
-	for(int index=0; index<lc.size(); ++index)
-	    lc[index] = std::tolower(lc[index]);
+        for(int index=0; index<lc.size(); ++index)
+            lc[index] = std::tolower(lc[index]);
 
-	return lc;
+        return lc;
     }
 
     int bestMatch(std::string lOption) {
 
-	// The idea is to determine the number of chars
-	// that matches the requested option
-	int matches = 0;
+        // The idea is to determine the number of chars
+        // that matches the requested option
+        int matches = 0;
 
-	// is greater don't waste time
-	if ( lOption.size() > longOption.size() )
-	    return matches;
+        // is greater don't waste time
+        if ( lOption.size() > longOption.size() )
+            return matches;
 
-	for(int index=0; index < lOption.size(); ++index) {
-	    if ( std::tolower(lOption[index]) == std::tolower(longOption[index]) )
-		matches++;
-	    else
-		return matches;
-	}
+        for(int index=0; index < lOption.size(); ++index) {
+            if ( std::tolower(lOption[index]) == std::tolower(longOption[index]) )
+                matches++;
+            else
+                return matches;
+        }
 
-	return matches;
+        return matches;
 
     }
 
@@ -142,11 +142,11 @@ class BaseOption {
     bool isMandatory()  const { return mandatory; }
 
     bool hasShortOption() {
-	return (shortOption != NO_OPTION);
+        return (shortOption != NO_OPTION);
     }
 
     bool hasLongOption() {
-	return !longOption.empty();
+        return !longOption.empty();
     }
 
     char getShortOption()  const { return shortOption; }
@@ -201,10 +201,10 @@ class BoolOption : public Option<bool> {
     {}
 
     bool getValue() {
-	if ( ! found )
-	    return false;
-	else
-	    return true;
+        if ( ! found )
+            return false;
+        else
+            return true;
     }
 
 };
@@ -222,10 +222,10 @@ class StringOption : public Option<std::string> {
     {}
 
     std::string getValue() {
-	if ( ! found )
-	    return defaultValue;
-	else
-	    return value;
+        if ( ! found )
+            return defaultValue;
+        else
+            return value;
     }
 
 };
@@ -246,41 +246,41 @@ class NumberOption : public Option<T> {
     T getValue() {
 
 
-	if ( ! Option<T>::found )
-	    return Option<T>::defaultValue;
-	else {
+        if ( ! Option<T>::found )
+            return Option<T>::defaultValue;
+        else {
 
-	    if ( canBeConvertedTo<T>( Option<T>::value ) ) {
-		return fromString<T>( Option<T>::value );
-	    }
-	    else {
-		// this is a tricky condition... we should be reporting an error
-		// possible throwing an exception
-		return -1;
-	    }
+            if ( canBeConvertedTo<T>( Option<T>::value ) ) {
+                return fromString<T>( Option<T>::value );
+            }
+            else {
+                // this is a tricky condition... we should be reporting an error
+                // possible throwing an exception
+                return -1;
+            }
 
-	}
+        }
 
     }
 
 };
 
-typedef NumberOption<int>	IntegerOption;
-typedef NumberOption<float>	FloatOption;
-typedef NumberOption<double> 	DoubleOption;
+typedef NumberOption<int>       IntegerOption;
+typedef NumberOption<float>     FloatOption;
+typedef NumberOption<double>    DoubleOption;
 
 
 class Parser {
 
     public:
     Parser() : helpOption('h', "help", false, "print this help") {
-	// we provide the help option by default
-	addOption(helpOption);
+        // we provide the help option by default
+        addOption(helpOption);
     }
 
     Parser& addOption(BaseOption& option) {
-	options.push_back(&option);
-	return *this;
+        options.push_back(&option);
+        return *this;
     }
 
     std::vector<std::string> parse(int argc, char** argv);
@@ -298,11 +298,11 @@ class Parser {
     BaseOption* findOption(std::string longOpt);
 
     std::string getSummaryOptionText(BaseOption* option) {
-	return getOptionText(option, "|");
+        return getOptionText(option, "|");
     }
 
     std::string getFullOptionText(BaseOption* option) {
-	return getOptionText(option, ", ");
+        return getOptionText(option, ", ");
     }
 
     std::string getOptionText(BaseOption* option, const char* separator);
@@ -316,116 +316,116 @@ Parser::parse(int argc, char** argv) {
 
     // first argument is the program name
     if ( argc >= 1 )
-	programName = argv[0];
+        programName = argv[0];
 
     // now, start iterating over each argument
     for(int argNumber=1; argNumber < argc; ++argNumber) {
 
-	std::string argument = argv[argNumber];
+        std::string argument = argv[argNumber];
 
-	// arguments start with "-"
-	// if not, push it into "other inputs"
-	if ( argument.empty() )
-	    continue;
+        // arguments start with "-"
+        // if not, push it into "other inputs"
+        if ( argument.empty() )
+            continue;
 
-	if ( argument[0] != '-' ) {
-	    // add it as other argument and continue with the next arg
-	    otherArguments.push_back( argument );
-	    continue;	
-	}
+        if ( argument[0] != '-' ) {
+            // add it as other argument and continue with the next arg
+            otherArguments.push_back( argument );
+            continue;        
+        }
 
-	// this is a malformed argument:
-	// "-"
-	if ( argument.length() < 2 ) {
-	    std::stringstream error;
-	    error << "Malformed argument! (see arg number " << argNumber << ")";
-	    usage(error.str());
-	}
+        // this is a malformed argument:
+        // "-"
+        if ( argument.length() < 2 ) {
+            std::stringstream error;
+            error << "Malformed argument! (see arg number " << argNumber << ")";
+            usage(error.str());
+        }
 
-	BaseOption* option = NULL;
+        BaseOption* option = NULL;
 
-	std::string possibleValue;
+        std::string possibleValue;
 
-	// now, if the next char is a '-' it's a long option,
-	// if not, it's a short one
-	if ( argument[1] != '-' ) {
+        // now, if the next char is a '-' it's a long option,
+        // if not, it's a short one
+        if ( argument[1] != '-' ) {
 
-	    option = findOption(argument[1]);
+            option = findOption(argument[1]);
 
-	    // this looks like a short option, so let's check if there
-	    // are no more chars here, then we pick the value from here
-	    if ( argument.length() > 2 ) {
-		possibleValue = argument.substr(2);
-	    }
+            // this looks like a short option, so let's check if there
+            // are no more chars here, then we pick the value from here
+            if ( argument.length() > 2 ) {
+                possibleValue = argument.substr(2);
+            }
 
 
-	}
-	else {
-	    
-	    // this looks like a long option, so let's check if there
-	    // are no more chars here, if not, that's malformed
-	    if ( argument.length() < 3 ) {
-		std::stringstream error;
-		error << "Malformed argument! (see arg number " << argNumber << ")";
-		usage(error.str());
-	    }
+        }
+        else {
+            
+            // this looks like a long option, so let's check if there
+            // are no more chars here, if not, that's malformed
+            if ( argument.length() < 3 ) {
+                std::stringstream error;
+                error << "Malformed argument! (see arg number " << argNumber << ")";
+                usage(error.str());
+            }
 
-	    // let's allow the separation between key and value by '='
-	    // on long options
-	    std::string optionAndValueStr = argument.substr(2);
+            // let's allow the separation between key and value by '='
+            // on long options
+            std::string optionAndValueStr = argument.substr(2);
 
-	    // initially we suppose there is no value
-	    std::string optionStr = optionAndValueStr;
+            // initially we suppose there is no value
+            std::string optionStr = optionAndValueStr;
 
-	    int separator = optionStr.find('=');
+            int separator = optionStr.find('=');
 
-	    if ( separator != std::string::npos ) {
-		optionStr     = optionAndValueStr.substr(0, separator);
-		possibleValue = optionAndValueStr.substr(separator+1);
-	    }
+            if ( separator != std::string::npos ) {
+                optionStr     = optionAndValueStr.substr(0, separator);
+                possibleValue = optionAndValueStr.substr(separator+1);
+            }
 
-	    option = findOption( optionStr );
+            option = findOption( optionStr );
 
-	}
+        }
 
-	if ( option == NULL ) {
-	    std::stringstream error;
-	    error << "Unknown option '" << argument << "' (see arg number " << argNumber << ")";
-	    usage(error.str());
-	}
+        if ( option == NULL ) {
+            std::stringstream error;
+            error << "Unknown option '" << argument << "' (see arg number " << argNumber << ")";
+            usage(error.str());
+        }
 
-	// let's see if this needs an argument
-	if ( option->needArgument() ) {
+        // let's see if this needs an argument
+        if ( option->needArgument() ) {
 
-	    if ( possibleValue.empty() ) {
+            if ( possibleValue.empty() ) {
 
-		// try to get the next one or fail
-		if ( argNumber+1 < argc ) {
+                // try to get the next one or fail
+                if ( argNumber+1 < argc ) {
 
-		    // let's move to the next argument
-		    argNumber++;
+                    // let's move to the next argument
+                    argNumber++;
 
-		    option->setValue( argv[argNumber] );
+                    option->setValue( argv[argNumber] );
 
-		}
-		else {
-		    std::stringstream error;
-		    error << "Option '" << argument << "' needs an additional argument";
-		    usage(error.str());
-		}
+                }
+                else {
+                    std::stringstream error;
+                    error << "Option '" << argument << "' needs an additional argument";
+                    usage(error.str());
+                }
 
-	    }
-	    else {
-		// the value we got directly from the option:
-		//   --key=value or -kvalue
-		option->setValue( possibleValue.c_str() );
-	    }
+            }
+            else {
+                // the value we got directly from the option:
+                //   --key=value or -kvalue
+                option->setValue( possibleValue.c_str() );
+            }
 
-	}
-	else {
-	    // set as read
-	    option->markAsFound();
-	}
+        }
+        else {
+            // set as read
+            option->markAsFound();
+        }
 
     }
 
@@ -433,7 +433,7 @@ Parser::parse(int argc, char** argv) {
 
     // was the help option requested?
     if ( helpOption.isSet() ) {
-	usage();
+        usage();
     }
 
     // let's go thru all the options to get all the
@@ -443,24 +443,24 @@ Parser::parse(int argc, char** argv) {
     std::string mandatoriesError; 
 
     for(std::vector<BaseOption*>::iterator iter = options.begin();
-	iter != options.end();
-	++iter
+        iter != options.end();
+        ++iter
     ) {
 
-	BaseOption* option = *iter;
+        BaseOption* option = *iter;
 
-	if ( option->isMandatory() && !option->isSet() ) {
+        if ( option->isMandatory() && !option->isSet() ) {
 
-	    if ( ! mandatoriesError.empty() )
-		mandatoriesError += ", ";
+            if ( ! mandatoriesError.empty() )
+                mandatoriesError += ", ";
 
-	    mandatoriesError += getSummaryOptionText(option);
-	}
+            mandatoriesError += getSummaryOptionText(option);
+        }
 
     }
 
     if ( ! mandatoriesError.empty() ) {
-	usage("The following arguments are mandatory: " + mandatoriesError);
+        usage("The following arguments are mandatory: " + mandatoriesError);
     }
 
     return otherArguments;
@@ -471,7 +471,7 @@ void
 Parser::usage(const char* text) {
 
     if ( strcmp(text, "") != 0 ) {
-	std::cerr << text << std::endl;
+        std::cerr << text << std::endl;
     }
 
     // add the options
@@ -485,35 +485,35 @@ Parser::usage(const char* text) {
 
 
     for(std::vector<BaseOption*>::iterator iter = options.begin();
-	iter != options.end();
-	++iter
+        iter != options.end();
+        ++iter
     ) {
 
-	BaseOption* option = *iter;
+        BaseOption* option = *iter;
 
-	// this is the syntax:
-	//   [ ] => optional
-	//   short|long
-	std::string summaryOptionBase = getSummaryOptionText(option);
-	std::string fullOptionBase    = getFullOptionText(option);
+        // this is the syntax:
+        //   [ ] => optional
+        //   short|long
+        std::string summaryOptionBase = getSummaryOptionText(option);
+        std::string fullOptionBase    = getFullOptionText(option);
 
-	if ( option->needArgument() ) {
-	    summaryOptionBase += " value";
-	    fullOptionBase    += " value";
-	}
+        if ( option->needArgument() ) {
+            summaryOptionBase += " value";
+            fullOptionBase    += " value";
+        }
 
-	// summary 
-	if ( ! option->isMandatory() ) {
-	    optionsSummary << "[" << summaryOptionBase << "]";
-	}
-	else {
-	    optionsSummary << summaryOptionBase;
-	}
+        // summary 
+        if ( ! option->isMandatory() ) {
+            optionsSummary << "[" << summaryOptionBase << "]";
+        }
+        else {
+            optionsSummary << summaryOptionBase;
+        }
 
-	optionsSummary << " ";
+        optionsSummary << " ";
 
-	// full description
-	fullDescription << " " << std::setw(maxWidth) << std::left << fullOptionBase << "\t\t" << option->getDescription() << std::endl;
+        // full description
+        fullDescription << " " << std::setw(maxWidth) << std::left << fullOptionBase << "\t\t" << option->getDescription() << std::endl;
 
     }
 
@@ -532,16 +532,16 @@ Parser::getOptionText(BaseOption* option, const char* separator) {
     std::string optionBase;
 
     if ( option->hasShortOption() ) {
-	optionBase += "-";
-	optionBase += option->getShortOption();
+        optionBase += "-";
+        optionBase += option->getShortOption();
     }
 
     if ( option->hasLongOption() ) {
 
-	if ( option->hasShortOption() )
-	    optionBase += separator;
+        if ( option->hasShortOption() )
+            optionBase += separator;
 
-	optionBase += "--" + option->getLongOption();
+        optionBase += "--" + option->getLongOption();
     }
 
     return optionBase;
@@ -553,10 +553,10 @@ Parser::findOption(char shortOption) {
     // iterate over the array and search for the short option
     for(int index=0; index < options.size(); ++index) {
 
-	BaseOption* option = options.at(index);
+        BaseOption* option = options.at(index);
 
-	if ( option->matches( shortOption ) )
-	    return option;
+        if ( option->matches( shortOption ) )
+            return option;
 
     }
 
@@ -569,9 +569,9 @@ Parser::findOption(std::string longOption) {
 
     // iterate over the array and search for the exact match option
     for(int index=0; index < options.size(); ++index) {
-	BaseOption* option = options.at(index);
-	if ( option->matches( longOption ) )
-	    return option;
+        BaseOption* option = options.at(index);
+        if ( option->matches( longOption ) )
+            return option;
     }
 
     // now, let's search for better matching ones...
@@ -580,37 +580,37 @@ Parser::findOption(std::string longOption) {
     std::vector<std::string> ambiguousOptions;
 
     for(int index=0; index < options.size(); ++index) {
-	BaseOption* option = options.at(index);
+        BaseOption* option = options.at(index);
 
-	int matchSize = option->bestMatch(longOption);
+        int matchSize = option->bestMatch(longOption);
 
-	// we have a new winner
-	if ( matchSize > bestMatchSize ) {
-	    bestMatchSize   = matchSize;
-	    bestMatchOption = option;
+        // we have a new winner
+        if ( matchSize > bestMatchSize ) {
+            bestMatchSize   = matchSize;
+            bestMatchOption = option;
 
-	    // clear the list
-	    ambiguousOptions.clear();
-	}
-	else if (bestMatchSize>0 && matchSize==bestMatchSize ) {
-	    // this is conflicting with other option
-	    ambiguousOptions.push_back(option->getLongOption());
-	}
+            // clear the list
+            ambiguousOptions.clear();
+        }
+        else if (bestMatchSize>0 && matchSize==bestMatchSize ) {
+            // this is conflicting with other option
+            ambiguousOptions.push_back(option->getLongOption());
+        }
 
     }
 
     if ( ambiguousOptions.size() > 0 ) {
-	// if we're in an ambiguous case, it's better to report it
-	std::stringstream error;
-	error << "Option '" << longOption << "' is ambiguous: ";
+        // if we're in an ambiguous case, it's better to report it
+        std::stringstream error;
+        error << "Option '" << longOption << "' is ambiguous: ";
 
-	error << bestMatchOption->getLongOption();
+        error << bestMatchOption->getLongOption();
 
-	for(int index=0; index < ambiguousOptions.size(); ++index) {
-	    error << ", " << ambiguousOptions[index];
-	}
+        for(int index=0; index < ambiguousOptions.size(); ++index) {
+            error << ", " << ambiguousOptions[index];
+        }
 
-	usage(error.str());
+        usage(error.str());
     }
 
 
