@@ -189,6 +189,8 @@ int main(int argc, char** argv) {
     StringOption  username      ('u', "username",   true , "set the username");
     IntegerOption port          ('p', "port",       false, 23, "server port");
     FloatOption   portability   ('n', "portability",false, "smart option...");
+    // defaul value is the limit of the type. for int types => (sizeof(int) * 1024)
+    IntegerRange  portRange     ('r', "portrange",  true, "range of ports");
 
 
     Parser parser;
@@ -196,7 +198,8 @@ int main(int argc, char** argv) {
     parser.addOption(debug)
           .addOption(username)
           .addOption(port)
-          .addOption(portability);
+          .addOption(portability)
+          .addOption(portRange);
 
     vector<string> otherArguments = parser.parse(argc, argv);
 
@@ -216,6 +219,14 @@ int main(int argc, char** argv) {
         cout << "portability was set to '" << portability.getValue() << "'" << endl;
     }
 
+    if ( portRange.isSet() ) {
+        std::list<int> list = portRange.getValue();
+        if ( list.size() > 0 ) {
+            cout << "Range seted from '" << list.front() << "' to '" << list.back() << "'." << endl;
+        } else {
+            cout << "is null" << std::endl;
+        }
+    }
  
     // if other arguments were specified, we can easily access them
     if ( ! otherArguments.empty() ) {

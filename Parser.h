@@ -223,6 +223,7 @@
 #include <iomanip>
 #include <string>
 #include <vector>
+#include <list>
 #include <sstream>
 #include <cctype>
 
@@ -436,7 +437,6 @@ class NumberOption : public Option<T> {
 
     T getValue() {
 
-
         if ( ! Option<T>::found )
             return Option<T>::defaultValue;
         else {
@@ -460,6 +460,47 @@ typedef NumberOption<int>       IntegerOption;
 typedef NumberOption<float>     FloatOption;
 typedef NumberOption<double>    DoubleOption;
 
+template<typename T>
+class RangeNumberOption : public Option<std::list<T> > {
+	public:
+
+	// default value is defined by the limit for the type thats is selected
+    RangeNumberOption(char sOption, const char* lOption, bool mandatory, const char* descr)
+     : Option<std::list<T> >(sOption, lOption, mandatory, true, descr)
+    { 
+	}
+
+	std::list<T> getValue() {
+		std::list<T> nums;
+		if ( ! Option<std::list<T> >::found ) {
+			nums.push_front(0);
+			nums.push_back(sizeof(T) * 1024);
+		} else {
+			std::string fullRange = Option<std::list<T> >::value;	
+			size_t pos = fullRange.find(",");
+			std::string begin = fullRange.substr(0, pos); 
+			std::string end;
+
+			if ( fullRange.find(",", pos) != std::string::npos ) {
+				end = fullRange.substr(pos + 1);
+			}
+
+			if ( end.size() != 0 ) {
+				if ( canBeConvertedTo<T>(begin) && canBeConvertedTo<T>(end) ) {
+					nums.push_front( fromString<T>(begin) );
+					nums.push_back( fromString<T>(end) );
+				}	
+			} // if is 0 some error occur in the params
+		}	
+		
+		return nums;
+	}
+		
+};
+
+typedef RangeNumberOption<int>   IntegerRange; 
+typedef RangeNumberOption<float> FloatRange; 
+typedef RangeNumberOption<long>  LongRange; 
 
 class Parser {
 
