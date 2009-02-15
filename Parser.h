@@ -224,7 +224,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
-
+#include <list>
 
 
 // helpers
@@ -281,7 +281,7 @@ class BaseOption {
         return value;
     }
 
-    void setValue(const char* readValue) {
+    virtual void setValue(const char* readValue) {
         found = true;
         value = readValue;
     }
@@ -459,6 +459,78 @@ typedef NumberOption<int>       IntegerOption;
 typedef NumberOption<float>     FloatOption;
 typedef NumberOption<double>    DoubleOption;
 
+
+/*
+class StringListOption : public Option< std::list<std::string> > {
+
+    public:
+
+    StringListOption(char sOption, const char* lOption, bool mandatory, const char* descr)
+     : Option< std::list<std::string> >(sOption, lOption, mandatory, true, descr)
+    {}
+
+    StringListOption(char sOption, const char* lOption, bool mandatory, const std::list<std::string>& defValue, const char* descr)
+     : Option< std::list<std::string> >(sOption, lOption, mandatory, true, defValue, descr)
+    {}
+
+    void setValue(const char* readValue) {
+        // call our parent
+        Option< std::list<std::string> >::setValue(readValue);
+
+        values.push_back(readValue);
+    }
+
+    std::list<std::string> getValue() {
+        if ( ! found )
+            return defaultValue;
+        else
+            return values;
+    }
+
+    protected:
+    std::list<std::string> values;
+
+};
+*/
+
+template<typename T>
+class NumberListOption : public Option< std::list<T> > {
+
+    public:
+
+    NumberListOption(char sOption, const char* lOption, bool mandatory, const char* descr)
+     : Option< std::list<T> >(sOption, lOption, mandatory, true, descr)
+    {}
+
+    NumberListOption(char sOption, const char* lOption, bool mandatory, const std::list<T>& defValue, const char* descr)
+     : Option< std::list<T> >(sOption, lOption, mandatory, true, defValue, descr)
+    {}
+
+    void setValue(const char* readValue) {
+
+        if ( canBeConvertedTo<T>( readValue ) ) {
+            // call our parent
+            Option< std::list<T> >::setValue(readValue);
+            values.push_back( fromString<T>(readValue) );
+        }
+
+    }
+
+    std::list<T> getValue() {
+
+        if ( ! Option<std::list<T> >::found )
+            return Option< std::list<T> >::defaultValue;
+        else 
+            return values;
+        
+
+    }
+
+    protected:
+    std::list<T> values;
+};
+
+typedef NumberListOption<std::string> StringListOption;
 
 class Parser {
 

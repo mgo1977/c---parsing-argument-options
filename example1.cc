@@ -189,6 +189,7 @@ int main(int argc, char** argv) {
     StringOption  username      ('u', "username",   true , "set the username");
     IntegerOption port          ('p', "port",       false, 23, "server port");
     FloatOption   portability   ('n', "portability",false, "smart option...");
+    StringListOption  book      ('j', "book",       false, "book of interest. could be more than one");
 
 
     Parser parser;
@@ -196,7 +197,8 @@ int main(int argc, char** argv) {
     parser.addOption(debug)
           .addOption(username)
           .addOption(port)
-          .addOption(portability);
+          .addOption(portability)
+          .addOption(book);
 
     vector<string> otherArguments = parser.parse(argc, argv);
 
@@ -214,6 +216,25 @@ int main(int argc, char** argv) {
 
     if ( portability.isSet() ) {
         cout << "portability was set to '" << portability.getValue() << "'" << endl;
+    }
+
+    if ( book.isSet() ) {
+        std::list<std::string> values = book.getValue();
+
+        cout << "book was set with " << values.size() << " entries: ";
+
+        for(std::list<string>::iterator entry = values.begin();
+            entry != values.end();
+            ++entry
+        ) {
+            if ( entry != values.begin() )
+                cout << ", ";
+
+            cout << "'" << *entry << "'";
+        }
+
+        cout << endl;
+
     }
 
  
