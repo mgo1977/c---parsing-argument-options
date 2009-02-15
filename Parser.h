@@ -152,7 +152,7 @@
  *                                      StringOption  will return a string
  *                                      IntegerOption will return an int
  *                                      StringListOption will return a list of strings:
-                                             std::list< std::string >
+ *                                           std::list< std::string >
  *                                      and so on...
  *                                                                                    
  *
@@ -266,8 +266,10 @@
 #include <iomanip>
 #include <string>
 #include <vector>
+#include <list>
 #include <sstream>
 #include <list>
+#include <cctype>
 
 
 // helpers
@@ -458,12 +460,12 @@ template<typename TYPE>
 class ListOption : public BaseOption {
 
     public:
-    ListOption(char sOption, const char* lOption, bool mandatory, bool fArgument, const char* descr = "")
-     : BaseOption(sOption, lOption, mandatory, fArgument, descr)
+    ListOption(char sOption, const char* lOption, bool mandatory, const char* descr = "")
+     : BaseOption(sOption, lOption, mandatory, true, descr)
     {}
 
-    ListOption(char sOption, const char* lOption, bool mandatory, bool fArgument, const std::list<TYPE>& defValue, const char* descr = "")
-     : BaseOption(sOption, lOption, mandatory, fArgument, descr), defaultValue(defValue)
+    ListOption(char sOption, const char* lOption, bool mandatory, const std::list<TYPE>& defValue, const char* descr = "")
+     : BaseOption(sOption, lOption, mandatory, true, descr), defaultValue(defValue)
     {}
 
     // implement according the Option type...
@@ -502,7 +504,7 @@ class BoolOption : public Option<bool> {
 
     public:
 
-    BoolOption(char sOption, const char* lOption, bool mandatory, const char* descr)
+    BoolOption(char sOption, const char* lOption, bool mandatory, const char* descr = "")
      : Option<bool>(sOption, lOption, mandatory, false, descr)
     {}
 
@@ -522,6 +524,45 @@ typedef ListOption<std::string> StringListOption;
 typedef ListOption<int>         IntegerListOption;
 typedef ListOption<float>       FloatListOption;
 typedef ListOption<double>      DoubleListOption;
+
+
+template<typename T>
+class RangeNumberOption : public ListOption<T> {
+
+    public:
+
+    RangeNumberOption(char sOption, const char* lOption, bool mandatory, const char* descr = "")
+     : ListOption<T>(sOption, lOption, mandatory, descr)
+    {}
+
+    RangeNumberOption(char sOption, const char* lOption, bool mandatory, const std::list<T>& defaultValue, const char* descr = "")
+     : ListOption<T>(sOption, lOption, mandatory, defaultValue, descr)
+    {}
+
+    void setValue(const char* readValue) {
+
+        std::string fullRange = readValue;
+        size_t pos = fullRange.find(",");
+
+        std::string begin = fullRange.substr(0, pos); 
+        std::string end;
+
+        if ( fullRange.find(",", pos) != std::string::npos ) {
+            end = fullRange.substr(pos + 1);
+        }
+
+        if ( end.size() != 0 ) {
+            ListOption<T>::setValue(begin.c_str());
+            ListOption<T>::setValue(end.c_str());
+        } // if is 0 some error occur in the params
+
+    }
+
+};
+
+typedef RangeNumberOption<int>   IntegerRange;
+typedef RangeNumberOption<float> FloatRange;
+typedef RangeNumberOption<long>  LongRange;
 
 class Parser {
 
