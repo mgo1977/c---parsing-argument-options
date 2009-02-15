@@ -78,19 +78,16 @@ int main(int argc, char** argv) {
 
         cout << "otherArguments: ";
 
-        bool isFirst = true;
-
         for(vector<string>::iterator argIter = otherArguments.begin();
             argIter != otherArguments.end();
             ++argIter
         ) {
 
-            if ( !isFirst )
+            if ( argIter != otherArguments.begin() )
                 cout << ", ";
 
             cout << "'" << *argIter << "'";
 
-            isFirst = false;
         }
 
         cout << endl;
