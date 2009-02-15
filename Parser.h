@@ -51,14 +51,30 @@
  *         FloatOption  : the next argument, ie:
  *         DoubleOption :   "-p23" or "-p 23" or "--port 23" or "--port=23"
  *
+ *      4. List types:
+ *          StringListOption, IntegerListOption,
+ *          FloatListOption and DoubleListOption
+ *
+ *         This list types will allow you to store more than the value when
+ *         the same option is specified more than once:
+ *
+ *              "--name mariano --name gustavo"
+ *
+ *         If the "name" option was declared as a StringOption, then the last
+ *         one specified will be retain ("gustavo") in this case. But if you
+ *         use the StringListOption you'll get both string entries contained
+ *         within a list in the same order as they were typed.
+ *          
+ *
  *     Options can be mandatory, most of them can have a default value and
  *     passing the description information will autogenerate the usage legend,
  *     ie:
  *
- *          BoolOption    debug   ('d', "debug",        false, "enables the debug mode");
+ *          BoolOption       debug('d', "debug",        false, "enables the debug mode");
  *          StringOption  username('u', "username",     true , "set the username");
- *          IntegerOption port    ('p', "port",         false, 23, "server port");
- *          FloatOption   port    ('n', "portability",  false, 1.11, "smart option...");
+ *          IntegerOption     port('p', "port",         false, 23, "server port");
+ *          FloatOption       port('n', "portability",  false, 1.11, "float option...");
+ *          StringListOption  book('j', "book",         false, "book of interest. could be more than one");
  *
  *     Note that
  *      
@@ -80,7 +96,8 @@
  *        -d, --debug                            enables the debug mode
  *        -u, --username value                   set the username
  *        -p, --port value                       server port
- *        -n, --portability value                smart option...
+ *        -n, --portability value                float option...
+ *        -j, --book value                       book of interest. could be more than one
  *
  *    It also tries to do full matching of the option, and if it's not successfull then it
  *    tries to get the option that best matches the argument. It can also detect ambiguities, ie:
@@ -96,7 +113,8 @@
  *        -d, --debug                            enables the debug mode
  *        -u, --username value                   set the username
  *        -p, --port value                       server port
- *        -n, --portability value                smart option...
+ *        -n, --portability value                float option...
+ *        -j, --book value                       book of interest. could be more than one
  *
  *    Also, it's case independent, so, "--port" will be equal to "--PoRt"
  *
@@ -107,7 +125,8 @@
  *       parser.addOption(debug)
  *             .addOption(username)
  *             .addOption(port)
- *             .addOption(portability);
+ *             .addOption(portability)
+ *             .addOption(book);
  *
  *      vector<string> otherArguments = parser.parse(argc, argv);
  *
@@ -132,7 +151,9 @@
  *                                      BoolOption    will return a bool
  *                                      StringOption  will return a string
  *                                      IntegerOption will return an int
- *                                      so on...
+ *                                      StringListOption will return a list of strings:
+                                             std::list< std::string >
+ *                                      and so on...
  *                                                                                    
  *
  *      Also please note, that's highly convenient to check is the option was set, prior to get
@@ -155,6 +176,7 @@
  *      StringOption  username      ('u', "username",   true , "set the username");
  *      IntegerOption port          ('p', "port",       false, 23, "server port");
  *      FloatOption   portability   ('n', "portability",false, "smart option...");
+ *      StringListOption  book      ('j', "book",       false, "book of interest. could be more than one");
  *
  *
  *      Parser parser;
@@ -162,7 +184,8 @@
  *      parser.addOption(debug)
  *            .addOption(username)
  *            .addOption(port)
- *            .addOption(portability);
+ *            .addOption(portability)
+ *            .addOption(book);
  *
  *      vector<string> otherArguments = parser.parse(argc, argv);
  *
@@ -182,6 +205,25 @@
  *          cout << "portability was set to '" << portability.getValue() << "'" << endl;
  *      }
  *
+ *
+ *      if ( book.isSet() ) {
+ *          std::list<std::string> values = book.getValue();
+ *  
+ *          cout << "book was set with " << values.size() << " entries: ";
+ *  
+ *          for(std::list<string>::iterator entry = values.begin();
+ *              entry != values.end();
+ *              ++entry
+ *          ) {
+ *              if ( entry != values.begin() )
+ *                  cout << ", ";
+ *  
+ *              cout << "'" << *entry << "'";
+ *          }
+ *  
+ *          cout << endl;
+ *  
+ *      }
  *
  *      // if other arguments were specified, we can easily access them
  *      if ( ! otherArguments.empty() ) {
@@ -210,10 +252,11 @@
  *
  *  As an example of its execution:
  *
- *      $ ./example2 arg1 -u Mariano arg2 --portab=2.3333 arg3 arg4 arg5
+ *      $ ./example1 arg1 -u Mariano arg2 --portab=2.3333 arg3 arg4 arg5 -j book1 --book book2
  *      username was set to 'Mariano'
  *      port was set to '23'
  *      portability was set to '2.3333'
+ *      book was set with 2 entries: 'book1', 'book2'
  *      otherArguments: 'arg1', 'arg2', 'arg3', 'arg4', 'arg5'
  *
  */
@@ -254,6 +297,21 @@ T fromString(const std::string& str) {
     return result;
 }
 
+// which kind of option types will required
+// and argument to be specified.
+// Booleans are the only ones that don't need
+// addition parameters as they're only used
+// as flags
+template<typename T>
+inline bool needsArgument() {
+    return true;
+}
+
+template<>
+inline bool needsArgument<bool>() {
+    return false;
+}
+
 
 /*
  * The goal is able to simple parse cmd line options:
@@ -273,17 +331,8 @@ class BaseOption {
        found(false)
     {}
 
-        bool isSet() {
+    bool isSet() {
         return found;
-    }
-
-    std::string getValue() const {
-        return value;
-    }
-
-    virtual void setValue(const char* readValue) {
-        found = true;
-        value = readValue;
     }
 
     void markAsFound() {
@@ -331,6 +380,8 @@ class BaseOption {
     bool needArgument() const { return followsArgument; }
     bool isMandatory()  const { return mandatory; }
 
+    virtual void setValue(const char* readValue) = 0;
+
     bool hasShortOption() {
         return (shortOption != NO_OPTION);
     }
@@ -355,7 +406,6 @@ class BaseOption {
 
     // status & value
     bool    found; // was it found?
-    std::string  value;
 
 };
 
@@ -364,22 +414,88 @@ template<typename TYPE>
 class Option : public BaseOption {
 
     public:
-    Option(char sOption, const char* lOption, bool mandatory, bool fArgument, const char* descr = "")
+    Option(char sOption, const char* lOption, bool mandatory, const char* descr = "")
+     : BaseOption(sOption, lOption, mandatory, needsArgument<TYPE>(), descr)
+    {}
+
+    Option(char sOption, const char* lOption, bool mandatory, const TYPE& defValue, const char* descr = "")
+     : BaseOption(sOption, lOption, mandatory, needsArgument<TYPE>(), descr), defaultValue(defValue)
+    {}
+
+    // implement according the Option type...
+    // only the dev can know how to convert from a std::string
+    // to a TYPE type
+    // The developer can provide some specialization of the
+    // canBeConvertedTo and fromString functions, or he can
+    // completely override the setValue method
+    virtual void setValue(const char* readValue) {
+
+        if ( canBeConvertedTo<TYPE>( readValue ) ) {
+
+            markAsFound();
+
+            value = fromString<TYPE>( readValue );
+        }
+    }
+
+    TYPE getValue() {
+
+        if ( ! found )
+            return defaultValue;
+        else
+            return value;
+
+    }
+
+
+    protected:
+    // configuration
+    TYPE    value;
+    TYPE    defaultValue;
+};
+
+template<typename TYPE>
+class ListOption : public BaseOption {
+
+    public:
+    ListOption(char sOption, const char* lOption, bool mandatory, bool fArgument, const char* descr = "")
      : BaseOption(sOption, lOption, mandatory, fArgument, descr)
     {}
 
-    Option(char sOption, const char* lOption, bool mandatory, bool fArgument, const TYPE& defValue, const char* descr = "")
+    ListOption(char sOption, const char* lOption, bool mandatory, bool fArgument, const std::list<TYPE>& defValue, const char* descr = "")
      : BaseOption(sOption, lOption, mandatory, fArgument, descr), defaultValue(defValue)
     {}
 
     // implement according the Option type...
     // only the dev can know how to convert from a std::string
     // to a TYPE type
-    virtual TYPE getValue() = 0;
+    // The developer can provide some specialization of the
+    // canBeConvertedTo and fromString functions, or he can
+    // completely override the setValue method
+    virtual void setValue(const char* readValue) {
+
+        if ( canBeConvertedTo<TYPE>( readValue ) ) {
+
+            markAsFound();
+
+            value.push_back(fromString<TYPE>( readValue ) );
+        }
+    }
+
+    std::list<TYPE> getValue() {
+
+        if ( ! found )
+            return defaultValue;
+        else
+            return value;
+
+    }
+
 
     protected:
     // configuration
-    TYPE    defaultValue;
+    std::list<TYPE> value;
+    std::list<TYPE> defaultValue;
 };
 
 class BoolOption : public Option<bool> {
@@ -391,146 +507,21 @@ class BoolOption : public Option<bool> {
     {}
 
     bool getValue() {
-        if ( ! found )
-            return false;
-        else
-            return true;
+        return found;
     }
 
 };
 
-class StringOption : public Option<std::string> {
 
-    public:
+typedef Option<std::string>     StringOption;
+typedef Option<int>             IntegerOption;
+typedef Option<float>           FloatOption;
+typedef Option<double>          DoubleOption;
 
-    StringOption(char sOption, const char* lOption, bool mandatory, const char* descr)
-     : Option<std::string>(sOption, lOption, mandatory, true, descr)
-    {}
-
-    StringOption(char sOption, const char* lOption, bool mandatory, const char* defValue, const char* descr)
-     : Option<std::string>(sOption, lOption, mandatory, true, defValue, descr)
-    {}
-
-    std::string getValue() {
-        if ( ! found )
-            return defaultValue;
-        else
-            return value;
-    }
-
-};
-
-template<typename T>
-class NumberOption : public Option<T> {
-
-    public:
-
-    NumberOption(char sOption, const char* lOption, bool mandatory, const char* descr)
-     : Option<T>(sOption, lOption, mandatory, true, descr)
-    {}
-
-    NumberOption(char sOption, const char* lOption, bool mandatory, T defValue, const char* descr)
-     : Option<T>(sOption, lOption, mandatory, true, defValue, descr)
-    {}
-
-    T getValue() {
-
-
-        if ( ! Option<T>::found )
-            return Option<T>::defaultValue;
-        else {
-
-            if ( canBeConvertedTo<T>( Option<T>::value ) ) {
-                return fromString<T>( Option<T>::value );
-            }
-            else {
-                // this is a tricky condition... we should be reporting an error
-                // possible throwing an exception
-                return -1;
-            }
-
-        }
-
-    }
-
-};
-
-typedef NumberOption<int>       IntegerOption;
-typedef NumberOption<float>     FloatOption;
-typedef NumberOption<double>    DoubleOption;
-
-
-/*
-class StringListOption : public Option< std::list<std::string> > {
-
-    public:
-
-    StringListOption(char sOption, const char* lOption, bool mandatory, const char* descr)
-     : Option< std::list<std::string> >(sOption, lOption, mandatory, true, descr)
-    {}
-
-    StringListOption(char sOption, const char* lOption, bool mandatory, const std::list<std::string>& defValue, const char* descr)
-     : Option< std::list<std::string> >(sOption, lOption, mandatory, true, defValue, descr)
-    {}
-
-    void setValue(const char* readValue) {
-        // call our parent
-        Option< std::list<std::string> >::setValue(readValue);
-
-        values.push_back(readValue);
-    }
-
-    std::list<std::string> getValue() {
-        if ( ! found )
-            return defaultValue;
-        else
-            return values;
-    }
-
-    protected:
-    std::list<std::string> values;
-
-};
-*/
-
-template<typename T>
-class NumberListOption : public Option< std::list<T> > {
-
-    public:
-
-    NumberListOption(char sOption, const char* lOption, bool mandatory, const char* descr)
-     : Option< std::list<T> >(sOption, lOption, mandatory, true, descr)
-    {}
-
-    NumberListOption(char sOption, const char* lOption, bool mandatory, const std::list<T>& defValue, const char* descr)
-     : Option< std::list<T> >(sOption, lOption, mandatory, true, defValue, descr)
-    {}
-
-    void setValue(const char* readValue) {
-
-        if ( canBeConvertedTo<T>( readValue ) ) {
-            // call our parent
-            Option< std::list<T> >::setValue(readValue);
-            values.push_back( fromString<T>(readValue) );
-        }
-
-    }
-
-    std::list<T> getValue() {
-
-        if ( ! Option<std::list<T> >::found )
-            return Option< std::list<T> >::defaultValue;
-        else 
-            return values;
-        
-
-    }
-
-    protected:
-    std::list<T> values;
-};
-
-typedef NumberListOption<std::string> StringListOption;
+typedef ListOption<std::string> StringListOption;
+typedef ListOption<int>         IntegerListOption;
+typedef ListOption<float>       FloatListOption;
+typedef ListOption<double>      DoubleListOption;
 
 class Parser {
 
