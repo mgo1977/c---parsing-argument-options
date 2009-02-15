@@ -93,6 +93,19 @@ These are the main steps to use:<br>
        <li>DoubleOption : will be set if specified, and the value will be the next argument, ie:
           "-p23" or "-p 23" or "--port 23" or "--port=23"
 
+       <li>List types:
+StringListOption, IntegerListOption,
+FloatListOption and DoubleListOption
+This list types will allow you to store more than the value when
+the same option is specified more than once:<br>
+
+<span style='padding-left:50px'>"--name mariano --name gustavo"<br>
+
+If the "name" option was declared as a StringOption, then the last
+one specified will be retain ("gustavo") in this case. But if you
+use the StringListOption you'll get both string entries contained
+within a list in the same order as they were typed.
+
       </ul>
       <br>
  
@@ -106,6 +119,9 @@ BoolOption    debug   ('d', "debug",        false, "enables the debug mode");
 StringOption  username('u', "username",     true , "set the username");
 IntegerOption port    ('p', "port",         false, 23, "server port");
 FloatOption   port    ('n', "portability",  false, 1.11, "smart option...");
+StringListOption  book('j', "book", false, "book of interest. could be more than one");
+
+
 
 </pre><br>
  
@@ -137,6 +153,7 @@ Options:
  -u, --username value                   set the username
  -p, --port value                       server port
  -n, --portability value                smart option...
+ -j, --book value                       book of interest. could be more than one
 
 </pre>
  
@@ -154,6 +171,8 @@ Options:
  -u, --username value                   set the username
  -p, --port value                       server port
  -n, --portability value                smart option...
+ -j, --book value                       book of interest. could be more than one
+
 </pre>
  
      Also, it's case independent, so, "--port" will be equal to "--PoRt"
@@ -168,7 +187,8 @@ Parser parser;
 parser.addOption(debug)
       .addOption(username)
       .addOption(port)
-      .addOption(portability);
+      .addOption(portability)
+      .addOption(book);
 
 vector<string> otherArguments = parser.parse(argc, argv);
 </pre>
@@ -226,14 +246,22 @@ int main(int argc, char** argv) {
     StringOption  username      ('u', "username",   true , "set the username");
     IntegerOption port          ('p', "port",       false, 23, "server port");
     FloatOption   portability   ('n', "portability",false, "smart option...");
+    StringListOption  book      ('j', "book",       false, "book of interest. could be more than one");
 
+    // default value is the limit of the type. for int types =&gt; (sizeof(int) * 1024)
+    std::list&lt;int&gt; defaultPortRange;
+    defaultPortRange.push_back(1);
+    defaultPortRange.push_back(sizeof(int)*1024);
+    IntegerRange  portRange     ('r', "portrange",  false, defaultPortRange, "range of ports");
 
     Parser parser;
 
     parser.addOption(debug)
           .addOption(username)
           .addOption(port)
-          .addOption(portability);
+          .addOption(portability)
+          .addOption(book)
+          .addOption(portRange);
 
     vector&lt;string&gt; otherArguments = parser.parse(argc, argv);
 
@@ -253,25 +281,49 @@ int main(int argc, char** argv) {
         cout &lt;&lt; "portability was set to '" &lt;&lt; portability.getValue() &lt;&lt; "'" &lt;&lt; endl;
     }
 
+    if ( book.isSet() ) {
+        std::list&lt;std::string&gt; values = book.getValue();
+
+        cout &lt;&lt; "book was set with " &lt;&lt; values.size() &lt;&lt; " entries: ";
+
+        for(std::list&lt;string&gt;::iterator entry = values.begin();
+            entry != values.end();
+            ++entry
+        ) {
+            if ( entry != values.begin() )
+                cout &lt;&lt; ", ";
+
+            cout &lt;&lt; "'" &lt;&lt; *entry &lt;&lt; "'";
+        }
+
+        cout &lt;&lt; endl;
+
+    }
+
+    //if ( portRange.isSet() ) {
+        std::list&lt;int&gt; list = portRange.getValue();
+        if ( list.size() &gt; 0 ) {
+            cout &lt;&lt; "Range seted from '" &lt;&lt; list.front() &lt;&lt; "' to '" &lt;&lt; list.back() &lt;&lt; "'." &lt;&lt; endl;
+        } else {
+            cout &lt;&lt; "is null" &lt;&lt; std::endl;
+        }
+    //}
  
     // if other arguments were specified, we can easily access them
     if ( ! otherArguments.empty() ) {
 
         cout &lt;&lt; "otherArguments: ";
 
-        bool isFirst = true;
-
         for(vector&lt;string&gt;::iterator argIter = otherArguments.begin();
             argIter != otherArguments.end();
             ++argIter
         ) {
 
-            if ( !isFirst )
+            if ( argIter != otherArguments.begin() )
                 cout &lt;&lt; ", ";
 
             cout &lt;&lt; "'" &lt;&lt; *argIter &lt;&lt; "'";
 
-            isFirst = false;
         }
 
         cout &lt;&lt; endl;
@@ -288,9 +340,9 @@ int main(int argc, char** argv) {
 <h2>License</h2>
 <p>LGPL</p>
 <h2>Authors</h2>
-<p>Mariano Ortega (mgo1977@gmail.com)<br/><br/>      </p>
+<p>Mariano Ortega (mgo1977@gmail.com)<br/><br/>      </p>
 <h2>Contact</h2>
-<p>Mariano Ortega (mgo1977@gmail.com)<br/>      </p>
+<p>Mariano Ortega (mgo1977@gmail.com)<br/>      </p>
 
 
     <h2>Download</h2>
