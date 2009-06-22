@@ -277,7 +277,7 @@
 
 // helpers
 template<typename T>
-bool canBeConvertedTo(const std::string str) {
+bool canBeConvertedTo(const std::string& str) {
 
     T result;
 
