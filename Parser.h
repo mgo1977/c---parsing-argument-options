@@ -344,15 +344,15 @@ class BaseOption {
         found = true;
     }
 
-    bool matches(char shOption) {
+    bool matches(char shOption) const {
         return ( shOption == shortOption );
     }
 
-    bool matches(std::string lOption) {
+    bool matches(const std::string& lOption) const {
         return ( toLower(lOption) == toLower(longOption) );
     }
 
-    std::string toLower(const std::string& original) {
+    std::string toLower(const std::string& original) const {
         std::string lc = original;
 
         for(int index=0; index<lc.size(); ++index)
@@ -361,7 +361,7 @@ class BaseOption {
         return lc;
     }
 
-    int bestMatch(std::string lOption) {
+    int bestMatch(const std::string& lOption) const {
 
         // The idea is to determine the number of chars
         // that matches the requested option
@@ -387,11 +387,11 @@ class BaseOption {
 
     virtual void setValue(const char* readValue) = 0;
 
-    bool hasShortOption() {
+    bool hasShortOption() const {
         return (shortOption != NO_OPTION);
     }
 
-    bool hasLongOption() {
+    bool hasLongOption() const {
         return !longOption.empty();
     }
 
