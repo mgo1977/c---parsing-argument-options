@@ -271,6 +271,9 @@
 #include <list>
 #include <cctype>
 
+#include <string.h>
+#include <stdlib.h>
+
 
 // helpers
 template<typename T>
